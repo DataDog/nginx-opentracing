@@ -1,0 +1,24 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+  jaeger:
+    protocols:
+      # 14268
+      thrift_http:
+      # 6831/UDP
+      thrift_compact:
+processors:
+  batch:
+exporters:
+  jaeger:
+    endpoint: jaeger:14250
+    insecure: true
+  logging:
+    loglevel: info
+service:
+  pipelines:
+    traces:
+      receivers: [otlp, jaeger]
+      processors: [batch]
+      exporters: [logging, jaeger]
