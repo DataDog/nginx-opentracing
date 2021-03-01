@@ -3,8 +3,8 @@ ARG NGINX_LABEL=latest
 FROM nginx:${NGINX_LABEL}
 
 ARG OPENTRACING_CPP_VERSION=v1.6.0
-ARG JAEGER_CPP_VERSION=master
-ARG GRPC_VERSION=v1.22.x
+ARG JAEGER_CPP_VERSION=v0.7.0
+ARG GRPC_VERSION=v1.27.x
 
 COPY . /src
 
@@ -39,7 +39,7 @@ RUN set -x \
               g++-7 \
  && true
 
- RUN true \
+RUN true \
 # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
 # (which is done after we install the built packages so we don't have to redownload any overlapping dependencies)
 	&& apt-mark showmanual | xargs apt-mark auto > /dev/null \
