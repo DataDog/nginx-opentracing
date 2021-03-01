@@ -5,6 +5,7 @@ FROM nginx:${NGINX_LABEL}
 ARG OPENTRACING_CPP_VERSION=v1.6.0
 ARG JAEGER_CPP_VERSION=v0.7.0
 ARG GRPC_VERSION=v1.27.x
+ARG DATADOG_VERSION="cgilmour/opentracing-1.6.0"
 
 COPY . /src
 
@@ -49,6 +50,8 @@ RUN true \
 ### Use g++ 7
   && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 5 \
   && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 5 \
+  && true
+RUN true \
 ### Build gRPC
   && git clone --depth 1 -b $GRPC_VERSION https://github.com/grpc/grpc \
   && cd grpc \
@@ -80,6 +83,19 @@ RUN true \
   && cp $HUNTER_INSTALL_DIR/lib/libyaml*so /usr/local/lib/ \
   && cd "$tempDir" \
   && ln -s /usr/local/lib/libjaegertracing.so /usr/local/lib/libjaegertracing_plugin.so \
+  && true
+RUN true \
+### Build dd-opentracing-cpp
+  && git clone --depth 1 -b $DATADOG_VERSION https://github.com/DataDog/dd-opentracing-cpp.git \
+  && cd dd-opentracing-cpp \
+  && scripts/install_dependencies.sh not-opentracing not-curl not-zlib \
+  && mkdir .build && cd .build \
+  && cmake -DBUILD_SHARED_LIBS=1 -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF .. \
+  && make && make install \
+  && cd "$tempDir" \
+  && ln -s /usr/local/lib/libdd_opentracing.so /usr/local/lib/libdd_opentracing_plugin.so \
+  && true
+RUN true \
 ### Build nginx-opentracing modules
   && NGINX_VERSION=`nginx -v 2>&1` && NGINX_VERSION=${NGINX_VERSION#*nginx/} \
   && echo "deb-src http://nginx.org/packages/mainline/debian/ stretch nginx" >> /etc/apt/sources.list \
